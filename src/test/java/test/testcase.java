@@ -1,5 +1,7 @@
 package test;
 
+import java.io.File;
+import org.apache.commons.io.FileUtils;
 import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -8,6 +10,8 @@ import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -17,17 +21,24 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import junit.framework.Assert;
+import com.relevantcodes.extentreports.ExtentReports;
+import com.relevantcodes.extentreports.ExtentTest;
+import com.relevantcodes.extentreports.LogStatus;
+
 
 public class testcase extends excelDriven {
 
 	public static WebDriver driver;
+	public static ExtentReports report;
+	public static ExtentTest logger;
+	
 
 	public static void main(String[] args) throws Exception {
 		driver = initializeDriver();
 		launchbrowser();
-		tc01();
-		tc02();
+		
+	   tc01();
+		/*tc02();
 		tc03();
 		tc04a();
 		tc04b();
@@ -36,9 +47,9 @@ public class testcase extends excelDriven {
 		tc07();
 		tc08();
 		tc09();
-		tc10();
-		tc11();
-		tc12();
+		tc10();*/
+		//tc11();
+		/*tc12();
 		tc13();
 		tc14();
 		tc15();
@@ -63,7 +74,7 @@ public class testcase extends excelDriven {
 		tc34();
 		tc35();
 		tc36();
-		tc37();
+		tc37();*/
 
 	}
 
@@ -92,93 +103,142 @@ public class testcase extends excelDriven {
 	}
 
 	public static void tc01() throws IOException {
+		logger=startReport("login error message");
 		driver.findElement(By.id("username")).sendKeys(getData("Username"));
+		logger.log(LogStatus.INFO, "Entered username");
 		driver.findElement(By.id("password")).clear();
-		System.out.println("Password field is cleared");
+		logger.log(LogStatus.INFO,"Password field is cleared");
 		driver.findElement(By.id("Login")).click();
+		logger.log(LogStatus.INFO, "Clicked on login");
 		String ErrorMessage = driver.findElement(By.id("error")).getText();
-		String Expected = "Please enter your password.";
+		String Expected = "Please enter password.";
 		if (ErrorMessage.equalsIgnoreCase(Expected)) {
 			System.out.println("Error message os as expected");
-		} else
+			logger.log(LogStatus.PASS, "Error message is as expected");
+		} else {
+			logger.log(LogStatus.FAIL,logger.addScreenCapture(screenshot("login")));
 			System.out.println("Error message is not as expected");
-
+			screenshot("login");
+		}
+		
 		System.out.println("**********************************");
-
+        closeReport();
 		driver.quit();
 	}
 
+	public static String screenshot(String tcase) throws IOException {
+		TakesScreenshot ts = (TakesScreenshot)driver; //Screenshot setup is done
+		File Source = ts.getScreenshotAs(OutputType.FILE);//Taken the screenshot and saving it to source
+		//TakeScreenshot object it is saved. not saved physically.
+		String sPathOfDestinationImage = System.getProperty("user.dir")+"//Screenshot//"+tcase+".png";
+		File dest = new File(sPathOfDestinationImage);
+		FileUtils.copyFile(Source, dest);
+		return sPathOfDestinationImage;
+		
+	}
+
 	public static void tc02() throws IOException, InterruptedException {
+		logger=startReport("Login to SDFC");
 		driver.findElement(By.id("username")).sendKeys(getData("Username"));
+		logger.log(LogStatus.INFO, "Entered username");
 		driver.findElement(By.id("password")).sendKeys(getData("password"));
+		logger.log(LogStatus.INFO,"Correct Password is entered");
 		System.out.println("Entered correct password and username");
 		driver.findElement(By.id("Login")).click();
+		logger.log(LogStatus.INFO, "Clicked on login");
 		Thread.sleep(5000);
-		System.out.println(driver.getTitle());
+		logger.log(LogStatus.INFO,driver.getTitle());
 		System.out.println("Navigated to home page...");
+		logger.log(LogStatus.PASS, "HomePage is displayed");
 		System.out.println("************************************");
+		closeReport();
 		driver.quit();
 
 	}
 
 	public static void tc03() throws IOException, InterruptedException {
+		logger=startReport("Check Remember me");
 		driver.findElement(By.id("username")).sendKeys(getData("Username"));
+		logger.log(LogStatus.INFO, "Entered username");
 		driver.findElement(By.id("password")).sendKeys(getData("password"));
+		logger.log(LogStatus.INFO,"Correct Password is entered");
 		System.out.println("Entered correct password and username");
 		driver.findElement(By.xpath("//input[@id='rememberUn']")).click();
+		logger.log(LogStatus.INFO, "Checked Remember me button");
 		System.out.println("Clicked Remember Me button");
 		driver.findElement(By.id("Login")).click();
+		logger.log(LogStatus.INFO, "Clicked on login");
 		Thread.sleep(4000);
 		driver.findElement(By.xpath("//span[@id='userNavLabel']")).click();
 		Thread.sleep(7000);
 		driver.findElement(By.xpath("//a[contains(text(),'Logout')]")).click();
 		Thread.sleep(5000);
+		logger.log(LogStatus.INFO, "Clicked on logout");
 		WebElement userValidate = driver.findElement(By.id("idcard-identity"));
 		String username = userValidate.getText();
 		String expectedname = getData("Username");
 		if (username.equalsIgnoreCase(expectedname)) {
 			System.out.println("Username is displayed as expected");
-		} else
+			logger.log(LogStatus.PASS, "Username is displayed as expected");
+		} else {
 			System.out.println("Username is not displayed as expected!!");
-
+		    logger.log(LogStatus.FAIL, "Username is not as expected");
+		}
 		System.out.println("**********************************");
+		closeReport();
 		driver.quit();
 
 	}
 
 	public static void tc04a() throws IOException, InterruptedException {
+		logger=startReport("Forgot Password");
 		driver.findElement(By.id("username")).sendKeys(getData("Username"));
+		logger.log(LogStatus.INFO, "Entered username");
 		driver.findElement(By.id("forgot_password_link")).click();
+		logger.log(LogStatus.INFO, "Clicked on forgot password link");
 		System.out.println("Clicked on forgot password:");
 		driver.findElement(By.id("un")).sendKeys(getData("Username"));
 		driver.findElement(By.id("continue")).click();
 		Thread.sleep(5000);
-		System.out.println(driver.findElement(By.xpath("//div[@class='message']//p[1]")).getText());
+		String actual=driver.findElement(By.xpath("//div[@class='message']//p[1]")).getText();
+		System.out.println(actual);
+		logger.log(LogStatus.INFO, actual);
 		System.out.println("Email sent successfully!");
+		logger.log(LogStatus.PASS,"Password reset email is sent");
+		closeReport();
 		driver.quit();
 	}
 
 	public static void tc04b() throws InterruptedException {
+		logger=startReport("Invalid username and password");
 		driver.findElement(By.id("username")).sendKeys("123");
+		logger.log(LogStatus.INFO, "Entered invalid username");
 		driver.findElement(By.id("password")).sendKeys("34251");
+		logger.log(LogStatus.INFO, "Entered invalid password");
 		driver.findElement(By.id("Login")).click();
+		logger.log(LogStatus.INFO, "Clicked on login");
 		Thread.sleep(4000);
 		String ErrorMessage = driver.findElement(By.id("error")).getText();
 		String Expected = "Please check your username and password. If you still can't log in, contact your Salesforce administrator.";
 		if (ErrorMessage.equalsIgnoreCase(Expected)) {
 			System.out.println("Error message is as expected");
-		} else
+			logger.log(LogStatus.PASS, "Error message is as expected");
+		} else {
 			System.out.println("Error message is not as expected");
-
+		    logger.log(LogStatus.FAIL, "Error message is not as expected");
+		}
+        closeReport();
 		System.out.println("**********************************");
 		driver.quit();
 
 	}
 
 	public static void tc05() throws IOException, InterruptedException {
+		logger=startReport("User menu");
 		login();
 		driver.findElement(By.xpath("//span[@id='userNavLabel']")).click();
 		Thread.sleep(4000);
+		logger.log(LogStatus.INFO, "Clicked on the menu");
 		String menu = driver.findElement(By.id("userNav-menuItems")).getText();
 		System.out.println(menu);
 		boolean flag = false;
@@ -191,19 +251,25 @@ public class testcase extends excelDriven {
 			} else {
 				flag = false;
 				System.out.println("Elements are not matching");
+				logger.log(LogStatus.FAIL,"Menu items are not as expected");
 			}
 		}
-		if (flag == true)
+		if (flag == true) {
 			System.out.println("Dropdown is as expected");
+			logger.log(LogStatus.PASS,"Menu items are present as expected");
+		}
+		closeReport();
 		driver.quit();
 	}
 
 	public static void tc06() throws IOException, InterruptedException {
+		logger=startReport("My Profile");
 		login();
 		driver.findElement(By.xpath("//span[@id='userNavLabel']")).click();
 		Thread.sleep(4000);
 		driver.findElement(By.xpath("//a[contains(text(),'My Profile')]")).click();
 		Thread.sleep(8000);
+		logger.log(LogStatus.INFO,"Clicked on my profile successfully");
 		System.out.println("Clicked my profile successfully");
 		driver.findElement(By.xpath("//a[@class='contactInfoLaunch editLink']//img")).click();
 		Thread.sleep(2000);
@@ -216,6 +282,7 @@ public class testcase extends excelDriven {
 		String expected1 = "Contact";
 		if (contact.equals(expected1)) {
 			System.out.println("Contacts tab is present");
+			logger.log(LogStatus.INFO,"Cntacts tab is present as expected");
 		} else {
 			System.out.println("Contacts s not as expected");
 		}
@@ -225,6 +292,7 @@ public class testcase extends excelDriven {
 		WebElement lastName = driver.findElement(By.id("lastName"));
 		lastName.clear();
 		lastName.sendKeys(getData("name"));
+		logger.log(LogStatus.INFO,"Updated last name in about tab");
 		System.out.println("Changed last name");
 		driver.findElement(By.xpath("//input[@class='zen-btn zen-primaryBtn zen-pas']")).click();
 		System.out.println("Clicked save all");
@@ -233,11 +301,11 @@ public class testcase extends excelDriven {
 		String expected2 = "Anu Jayanthi Shan ";
 		if (newuser.equals(expected2)) {
 			System.out.println("Username is modified");
+			logger.log(LogStatus.INFO,"User info is modified");
 		} else {
 			System.out.println("Username is not updated");
 		}
-		WebElement post = driver
-				.findElement(By.xpath("//span[contains(@class,'publisherattachtext')][contains(text(),'Post')]"));
+		WebElement post = driver.findElement(By.xpath("//span[contains(@class,'publisherattachtext')][contains(text(),'Post')]"));
 		WebDriverWait wait = new WebDriverWait(driver, 10);
 		wait.until(ExpectedConditions.elementToBeClickable(post));
 		post.click();
@@ -249,6 +317,7 @@ public class testcase extends excelDriven {
 		Thread.sleep(3000);
 		String post1 = driver.findElement(By.xpath("//p[contains(text(),'My very first')]")).getText();
 		System.out.println(post1);
+		logger.log(LogStatus.INFO,"First post is made");
 		System.out.println("Made first post");
 		WebElement file = driver.findElement(By.xpath("//span[contains(@class,'publisherattachtext')][contains(text(),'File')]"));
 		wait.until(ExpectedConditions.elementToBeClickable(file));
@@ -259,6 +328,7 @@ public class testcase extends excelDriven {
 		driver.findElement(By.xpath("//input[@id='publishersharebutton']")).click();
 		String newfile = driver.findElement(By.xpath("//span[contains(text(),'posted a file.')]")).getText();
 		System.out.println(newfile);
+		logger.log(LogStatus.INFO,"File is uploaded successfully");
 		System.out.println("File uploaded");
 		Thread.sleep(4000);
 		WebElement link1 = driver.findElement(By.xpath("//a[@id='uploadLink']"));
@@ -276,11 +346,14 @@ public class testcase extends excelDriven {
 		action.dragAndDropBy(crop,30,220).build().perform();
 		driver.findElement(By.id("j_id0:j_id7:save")).click();
 		Thread.sleep(8000);
+		logger.log(LogStatus.PASS,"Photo is uploaded successfully");
 		System.out.println("Photo uploaded");
+		closeReport();
 		driver.quit();
 	}
 
 	public static void tc07() throws IOException, Exception {
+		logger=startReport("My Settings");
 		login();
 		driver.findElement(By.xpath("//span[@id='userNavLabel']")).click();
 		Thread.sleep(8000);
@@ -290,9 +363,11 @@ public class testcase extends excelDriven {
 		driver.findElement(By.xpath("//span[@id='LoginHistory_font']")).click();
 		Thread.sleep(2000);
 		driver.findElement(By.xpath("//a[contains(text(),'Download login history for last six months, includ')]")).click();
+		logger.log(LogStatus.INFO,"Login history downloaded");
 		System.out.println("Login history downloaded");
 		driver.findElement(By.xpath("//div[@id='PersonalInfo']//a[@class='header setupFolder']")).click();
 		driver.findElement(By.xpath("//span[@id='DisplayAndLayout_font']")).click();
+		logger.log(LogStatus.INFO,"Clicked on Display and Layout");
 		System.out.println("Clicked on Display and Layout");
 		driver.findElement(By.xpath("//span[@id='CustomizeTabs_font']")).click();
 		WebElement custom1 = driver.findElement(By.name("p4"));
@@ -306,6 +381,7 @@ public class testcase extends excelDriven {
 		driver.findElement(By.name("save")).click();
 		Thread.sleep(4000);
 		System.out.println(driver.findElement(By.xpath("//a[contains(text(),'Reports')]")).getText());
+		logger.log(LogStatus.INFO,"Reports tab added to the links in the page");
 		System.out.println("Reports tab added to the links in the page");
 		Thread.sleep(4000);
 		driver.findElement(By.xpath("//div[@id='EmailSetup']//a[@class='header setupFolder']")).click();
@@ -319,6 +395,7 @@ public class testcase extends excelDriven {
 		Thread.sleep(4000);
 		driver.findElement(By.xpath("//input[@name='save']")).click();
 		Thread.sleep(7000);
+		logger.log(LogStatus.INFO,"Email updated, changes saved");
 		System.out.println("Changes made");
 		driver.findElement(By.xpath("//div[@id='CalendarAndReminders']//a[@class='header setupFolder']")).click();
 		driver.findElement(By.xpath("//a[@id='Reminders_font']")).click();
@@ -330,11 +407,16 @@ public class testcase extends excelDriven {
 		driver.switchTo().window(getWindow[1]);
 		driver.findElement(By.name("dismiss_all")).click();
 		System.out.println("Popup window handled");
+		logger.log(LogStatus.PASS,"Popup window handled");
+		closeReport();
 		driver.quit();
 
 	}
 
+	
+
 	public static void tc08() throws IOException, Exception {
+		logger=startReport("Developer Console");
 		login();
 		driver.findElement(By.xpath("//span[@id='userNavLabel']")).click();
 		Thread.sleep(7000);
@@ -342,62 +424,81 @@ public class testcase extends excelDriven {
 		Set<String> getAllWindows = driver.getWindowHandles();
 		String[] getWindow = getAllWindows.toArray(new String[getAllWindows.size()]);
 		driver.switchTo().window(getWindow[1]);
+		logger.log(LogStatus.INFO,"Switched to developr console window");
 		System.out.println(driver.getCurrentUrl());
 		Thread.sleep(3000);
 		System.out.println("Developer console window is opened");
 		driver.manage().window().maximize();
 		driver.close();
+		logger.log(LogStatus.PASS,"Window is closed");
 		System.out.println("Window is closed");
 		driver.switchTo().window(getWindow[0]);
+		closeReport();
 		driver.quit();
 
 	}
 
 	public static void tc09() throws IOException, InterruptedException {
+		logger=startReport("LogOut");
 		login();
 		Thread.sleep(4000);
 		driver.findElement(By.xpath("//span[@id='userNavLabel']")).click();
 		Thread.sleep(7000);
 		driver.findElement(By.xpath("//a[contains(text(),'Logout')]")).click();
+		logger.log(LogStatus.INFO,"Clicked on LogOut");
 		Thread.sleep(5000);
 		System.out.println(driver.getCurrentUrl());
+		logger.log(LogStatus.INFO,driver.getCurrentUrl());
 		System.out.println("Navigated to login page");
+		logger.log(LogStatus.PASS,"Navigated to login page");
+		closeReport();
 		driver.quit();
 
 	}
 
 	public static void tc10() throws IOException, InterruptedException {
+		logger=startReport("Create Account");
 		login();
 		clickonAccounts();
+		logger.log(LogStatus.INFO,"Clicked on Accounts");
 		Thread.sleep(4000);
 		driver.findElement(By.name("new")).click();
 		driver.findElement(By.xpath("//input[@id='acc2']")).sendKeys("Test Purpose");
 		WebElement type = driver.findElement(By.id("acc6"));
 		Select sl = new Select(type);
 		sl.selectByValue("Technology Partner");
+		logger.log(LogStatus.INFO,"Clicked on type");
 		Thread.sleep(2000);
 		WebElement priority = driver.findElement(By.id("00N3h000003Stm8"));
 		((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", priority);
 		Select sl1 = new Select(priority);
 		sl1.selectByValue("High");
+		logger.log(LogStatus.INFO,"Selected priority");
 		driver.findElement(By.name("save")).click();
 		Thread.sleep(4000);
 		String newacc = driver.findElement(By.xpath("//h2[contains(text(),'Account Detail')]")).getText();
 		String expected1 = "Account Detail";
 		if (newacc.equals(expected1)) {
+			logger.log(LogStatus.PASS,"Account created and details are displayed");
 			System.out.println("Account created and details are displayed");
-		} else
-			System.out.println("Account details not diaplayed");
+		} else {
+			logger.log(LogStatus.FAIL,"Account details not displayed");
+			System.out.println("Account details not displayed");
+		}
+		closeReport();
 		driver.quit();
 
 	}
 
 	public static void tc11() throws IOException, InterruptedException {
+		logger=startReport("Create new view");
 		login();
 		clickonAccounts();
+		logger.log(LogStatus.INFO,"Clicked on Account");
 		Thread.sleep(4000);
 		driver.findElement(By.xpath("//a[contains(text(),'Create New View')]")).click();
 		driver.findElement(By.name("fname")).sendKeys(getData("viewname"));
+		logger.log(LogStatus.INFO,"Entered view name");
 		WebElement viewName = driver.findElement(By.name("devname"));
 		Thread.sleep(5000);
 		Actions act = new Actions(driver);
@@ -405,24 +506,30 @@ public class testcase extends excelDriven {
 		act.sendKeys(Keys.ENTER).perform();
 		Thread.sleep(4000);
 		driver.findElement(By.name("save")).click();
+		logger.log(LogStatus.INFO,"Saved the details");
 		String acc = driver.findElement(By.name("fcf")).getText();
 		String accarray[] = acc.split("\n");
 		for (int i = 0; i < accarray.length; i++) {
 			if (accarray[i].equals("New Contract")) {
+				logger.log(LogStatus.PASS, "New view link created");
 				System.out.println("New view link created");
 				break;
 
 			}
 		}
+		closeReport();
 		driver.quit();
 
 	}
 
 	public static void tc12() throws IOException, InterruptedException {
+		logger=startReport("Edit view");
 		login();
 		clickonAccounts();
+		logger.log(LogStatus.INFO, "Clicked on accounts");
 		driver.findElement(By.xpath("//span[@class='fFooter']//a[contains(text(),'Edit')]")).click();
 		driver.findElement(By.xpath("//input[@id='fname']")).sendKeys(getData("updateview"));
+		logger.log(LogStatus.INFO, "Updated view name");
 		System.out.println("Updated view name");
 		WebElement dropdown = driver.findElement(By.xpath("//select[@id='fcol1']"));
 		Thread.sleep(3000);
@@ -441,21 +548,26 @@ public class testcase extends excelDriven {
 		Select available = new Select(element);
 		available.selectByVisibleText("Last Modified Date");
 		Thread.sleep(1000);
+		logger.log(LogStatus.INFO, "Last Modified Date added");
 		driver.findElement(By.xpath("//img[@class='rightArrowIcon']")).click();
 		driver.findElement(By.name("save")).click();
 		Thread.sleep(3000);
 		String added = driver.findElement(By.xpath("//div[@title='Last Modified Date']")).getText();
 		String expec1 = "Last Modified Date";
 		if (added.equals(expec1)) {
+			logger.log(LogStatus.PASS, "Last modified date added to list");
 			System.out.println("Last modified date added to list");
 		}
+		closeReport();
 		driver.quit();
 
 	}
 
 	public static void tc13() throws InterruptedException, IOException {
+		logger=startReport("Merge Accounts");
 		login();
 		clickonAccounts();
+		logger.log(LogStatus.INFO, "Clicked on accounts");
 		Thread.sleep(2000);
 		driver.findElement(By.xpath("//a[contains(text(),'Merge Accounts')]")).click();
 		driver.findElement(By.name("srch")).sendKeys(getData("merge"));
@@ -465,11 +577,14 @@ public class testcase extends excelDriven {
 		driver.findElement(By.xpath("//input[@value=' Merge ']")).click();
 		Alert alert = driver.switchTo().alert();
 		System.out.println("Switched to alert");
+		logger.log(LogStatus.INFO, "Handled alert");
 		Thread.sleep(2000);
 		alert.accept();
 		Thread.sleep(3000);
 		System.out.println(driver.findElement(By.xpath("//a[contains(text(),'Test Purpose')]")).getText());
+		logger.log(LogStatus.PASS, "Merged account is displayed");
 		System.out.println("Merged account is displayed");
+		closeReport();
 		driver.quit();
 
 	}
@@ -1023,34 +1138,34 @@ public class testcase extends excelDriven {
 	}
 
 	public static void tc36() throws IOException, InterruptedException {
+		logger=startReport("Blocking event in calender");
 		login();
 		driver.findElement(By.xpath("//a[contains(text(),'Home')]")).click();
 		System.out.println("Clicked on home button");
-		driver.findElement(By.xpath("//input[@value='No Thanks']")).click();
-		Thread.sleep(1000);
-		driver.findElement(By.className("checkbox_faux")).click();
-		Thread.sleep(4000);
-		driver.findElement(By.id("lexSubmit")).click();
+		logger.log(LogStatus.INFO,"Clicked on home button");
 		Thread.sleep(3000);
-		driver.findElement(By.xpath("//a[contains(text(),'Saturday April 25, 2020')]")).click();
+		driver.findElement(By.xpath("//a[contains(text(),'Tuesday April 28, 2020')]")).click();
 		Thread.sleep(1000);
 		System.out.println(driver.findElement(By.xpath("//h1[contains(@class,'pageType')]")).getText());
 		WebElement element = driver.findElement(By.xpath("//a[contains(text(),'8:00 PM')]"));
 		((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", element);
 		Thread.sleep(500);
 		element.click();
+		logger.log(LogStatus.INFO,"Clicked on 8:00PM");
 		System.out.println("Clicked on 8:00PM");
 		driver.findElement(By.xpath("//img[@class='comboboxIcon']")).click();
 		Thread.sleep(3000);
 		Set<String> getAllWindows = driver.getWindowHandles();
 		String[] getWindow = getAllWindows.toArray(new String[getAllWindows.size()]);
 		driver.switchTo().window(getWindow[1]);
+		logger.log(LogStatus.INFO,"Switched to window");
 		System.out.println("Switched to window");
 		driver.findElement(By.xpath("//a[contains(text(),'Other')]")).click();
 		driver.switchTo().window(getWindow[0]);
 		Thread.sleep(2000);
 		driver.findElement(By.id("EndDateTime_time")).click();
 		driver.findElement(By.id("timePickerItem_42")).click();
+		logger.log(LogStatus.INFO,"End Time is selected as 9:00PM");
 		System.out.println("End Time is selected as 9:00PM");
 		driver.findElement(By.name("save")).click();
 		System.out.println("Clicked on Save");
@@ -1061,29 +1176,31 @@ public class testcase extends excelDriven {
 		String event = element2.getText();
 		String expected2 = "Other";
 		if (event.equals(expected2)) {
+			logger.log(LogStatus.PASS,"New event is created");
 			System.out.println("new event is created");
 		} else {
+			logger.log(LogStatus.FAIL,"Event not created");
 			System.out.println("Event not created");
 		}
+		closeReport();
+		driver.quit();
 	}
 
 	public static void tc37() throws IOException, InterruptedException {
-		tc02();
+		logger=startReport("Blockinh with weekly recurrence");
+		login();
 		driver.findElement(By.xpath("//a[contains(text(),'Home')]")).click();
 		System.out.println("Clicked on home button");
-		driver.findElement(By.xpath("//input[@value='No Thanks']")).click();
-		Thread.sleep(1000);
-		driver.findElement(By.className("checkbox_faux")).click();
-		Thread.sleep(4000);
-		driver.findElement(By.id("lexSubmit")).click();
+		logger.log(LogStatus.INFO,"Clicked on home button");
 		Thread.sleep(3000);
-		driver.findElement(By.xpath("//a[contains(text(),'Saturday April 25, 2020')]")).click();
+		driver.findElement(By.xpath("//a[contains(text(),'Tuesday April 28, 2020')]")).click();
 		System.out.println(driver.findElement(By.xpath("//h1[contains(@class,'pageType')]")).getText());
 		Thread.sleep(1000);
 		WebElement element = driver.findElement(By.xpath("//a[contains(text(),'4:00 PM')]"));
 		((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", element);
 		Thread.sleep(500);
 		element.click();
+		logger.log(LogStatus.INFO,"Clicked on 4:00PM");
 		System.out.println("Clicked on 4:00PM");
 		Thread.sleep(1000);
 		driver.findElement(By.xpath("//img[@class='comboboxIcon']")).click();
@@ -1091,59 +1208,62 @@ public class testcase extends excelDriven {
 		String[] getWindow = getAllWindows.toArray(new String[getAllWindows.size()]);
 		driver.switchTo().window(getWindow[1]);
 		driver.findElement(By.xpath("//a[contains(text(),'Other')]")).click();
+		logger.log(LogStatus.INFO,"Clicked on Other");
 		System.out.println("Clicked on Other");
 		driver.switchTo().window(getWindow[0]);
-		// driver.findElement(By.id("EndDateTime_time")).click();
-		// Thread.sleep(1000);
-		// driver.findElement(By.id("//div[@id='timePickerItem_38']")).click();
-		// System.out.println("Selected end time as 7PM");
+		driver.findElement(By.id("EndDateTime_time")).click();
+		Thread.sleep(1000);
+		WebElement end=driver.findElement(By.xpath("//div[@id='timePickerItem_38']"));
+		((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", end);
+		Thread.sleep(3000);
+		logger.log(LogStatus.INFO,"Clicked on 7:00PM");
 		driver.findElement(By.xpath("//input[@id='IsRecurrence']")).click();
+		logger.log(LogStatus.INFO,"Enabled recurrence");
 		System.out.println("Enabled recuurence");
 		driver.findElement(By.xpath("//input[@id='rectypeftw']")).click();
 		System.out.println("....");
 		WebElement element1 = driver.findElement(By.xpath("//input[@id='RecurrenceEndDateOnly']"));
 		((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", element1);
 		Thread.sleep(2000);
-		driver.findElement(By.xpath("//a[contains(text(),'Calculate Latest Date')]")).click();
-		Thread.sleep(7000);
-		System.out.println(element1.getText());
+		element1.click();
+		driver.findElement(By.xpath("//img[@class='calRight']")).click();
+		Thread.sleep(4000);
+		WebElement date = driver.findElement(By.xpath("//td[@class='weekday' and contains(text(),'12')]"));
+		((JavascriptExecutor) driver).executeScript("arguments[0].click(true);", date);
+		logger.log(LogStatus.INFO,"Entered recurrence end date");
 		System.out.println("Selected on recurrence end date");
 		driver.findElement(By.name("save")).click();
 		Thread.sleep(5000);
 		driver.findElement(By.xpath("//img[@class='monthViewIcon']")).click();
 		WebElement element2 = driver.findElement(By.xpath("//a[contains(text(),'Other')]"));
+		Thread.sleep(3000);
 		String event = element2.getText();
 		String expected2 = "Other";
-		Assert.assertEquals(event, expected2);
+		if (event.equals(expected2)) {
+			logger.log(LogStatus.PASS,"New event is created");
+			System.out.println("new event is created");
+		} else {
+			logger.log(LogStatus.FAIL,"Event not created");
+			System.out.println("Event not created");
+		}
+		closeReport();
+		driver.quit();
+		
 	}
 
 	public static void clickContacts() throws InterruptedException {
 		driver.findElement(By.xpath("//a[contains(text(),'Contacts')]")).click();
-		driver.findElement(By.xpath("//input[@value='No Thanks']")).click();
-		Thread.sleep(1000);
-		driver.findElement(By.className("checkbox_faux")).click();
-		Thread.sleep(4000);
-		driver.findElement(By.id("lexSubmit")).click();
-	}
+		}
 
 	public static void clickedLeads() throws InterruptedException {
 		driver.findElement(By.xpath("//a[contains(text(),'Leads')]")).click();
-		driver.findElement(By.xpath("//input[@value='No Thanks']")).click();
-		Thread.sleep(1000);
-		driver.findElement(By.className("checkbox_faux")).click();
-		Thread.sleep(4000);
-		driver.findElement(By.id("lexSubmit")).click();
+		
 
 	}
 
 	public static void clickOpportunities() throws InterruptedException {
 		driver.findElement(By.xpath("//a[contains(text(),'Opportunities')]")).click();
 		Thread.sleep(5000);
-		driver.findElement(By.xpath("//input[@value='No Thanks']")).click();
-		Thread.sleep(1000);
-		driver.findElement(By.className("checkbox_faux")).click();
-		Thread.sleep(4000);
-		driver.findElement(By.id("lexSubmit")).click();
 		System.out.println("Clicked on opportunities");
 
 	}
@@ -1151,19 +1271,31 @@ public class testcase extends excelDriven {
 	public static void clickonAccounts() throws InterruptedException {
 		driver.findElement(By.xpath("//li[@id='Account_Tab']//a[contains(text(),'Accounts')]")).click();
 		Thread.sleep(5000);
-		driver.findElement(By.xpath("//input[@value='No Thanks']")).click();
-		Thread.sleep(1000);
-		driver.findElement(By.className("checkbox_faux")).click();
-		Thread.sleep(4000);
-		driver.findElement(By.id("lexSubmit")).click();
+		
 	}
 
 	public static void login() throws IOException, InterruptedException {
 		driver.findElement(By.id("username")).sendKeys(getData("Username"));
+		logger.log(LogStatus.INFO,"Entered correct username");
 		driver.findElement(By.id("password")).sendKeys(getData("password"));
+		logger.log(LogStatus.INFO,"Entered correct password");
 		System.out.println("Entered correct password and username");
 		driver.findElement(By.id("Login")).click();
+		logger.log(LogStatus.INFO,"Clicked on login");
 		Thread.sleep(5000);
 
 	}
+	public static ExtentTest startReport(String tcase) {
+		String sPath= System.getProperty("user.dir")+"//Extent_reports//sample2.html";
+		report= new ExtentReports(sPath);
+		//report= (ExtentReports) driver;
+		return logger= report.startTest(tcase);
+	}
+	
+	public static void closeReport() {
+		report.endTest(logger);
+		report.flush();
+	}
+	
+	
 }
